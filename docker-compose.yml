@@ -17,6 +17,7 @@ services:
     restart: always
     depends_on:
       - mongodb 
+      - elasticsearch
     ports:
       - "514:1514/udp"
     volumes:
