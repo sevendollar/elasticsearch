@@ -4,7 +4,7 @@ services:
   mongodb:
     image: mongo
     container_name: mongo
-    restart: always
+    restart: unless-stopped
     environment:
       - MONGO_INITDB_ROOT_USERNAME=jef
       - MONGO_INITDB_ROOT_PASSWORD=mongopw
@@ -14,7 +14,7 @@ services:
   logstash:
     build: logstash/.
     container_name: logstash
-    restart: always
+    restart: unless-stopped
     environment:
       - "LS_JAVA_OPTS=-Xms4g -Xmx4g"
     depends_on:
@@ -23,15 +23,15 @@ services:
       - es02
       - es03
     ports:
-      - "514:1514/udp"
+      - "1514:1514/udp"
     volumes:
-      - ~/git/elasticsearch/logstash/logstash-pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ~/git/elasticsearch/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ~/elasticsearch/logstash/logstash-pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ~/elasticsearch/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
 
   es01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.1.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
     container_name: es01
-    restart: always
+    restart: unless-stopped
     environment:
       - node.name=es01
       - discovery.seed_hosts=es02,es03
@@ -47,9 +47,9 @@ services:
       - 9201:9200
 
   es02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.1.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
     container_name: es02
-    restart: always
+    restart: unless-stopped
     environment:
       - node.name=es02
       - discovery.seed_hosts=es01,es03
@@ -65,9 +65,9 @@ services:
       - 9202:9200
 
   es03:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.1.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
     container_name: es03
-    restart: always
+    restart: unless-stopped
     environment:
       - node.name=es03
       - discovery.seed_hosts=es02,es01
@@ -83,15 +83,17 @@ services:
       - 9203:9200
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.1.1
+    image: docker.elastic.co/kibana/kibana:7.2.0
     container_name: kibana
+    restart: unless-stopped
     depends_on:
       - es01
       - es02
+      - es03
     environment:
-      - ELASTICSEARCH_URL=http://192.168.15.170:9200
+      - ELASTICSEARCH_URL=http://10.7.12.111
     ports:
       - 5601:5601
     volumes:
-      - ~/git/elasticsearch/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ~/elasticsearch/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
 
