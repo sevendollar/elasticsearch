@@ -25,8 +25,8 @@ services:
     ports:
       - "1514:1514/udp"
     volumes:
-      - ~/elasticsearch/logstash/logstash-pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ~/elasticsearch/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - $PWD/logstash/logstash-pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
+      - $PWD/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
 
   es01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
@@ -91,9 +91,9 @@ services:
       - es02
       - es03
     environment:
-      - ELASTICSEARCH_URL=http://10.7.12.111
+      - ELASTICSEARCH_URL=http://10.7.12.107
     ports:
       - 5601:5601
     volumes:
-      - ~/elasticsearch/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - $PWD/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
 
