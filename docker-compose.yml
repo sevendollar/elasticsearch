@@ -33,19 +33,14 @@ services:
     container_name: es1
     restart: unless-stopped
     environment:
-      - node.name=es1
-      - discovery.seed_hosts=es2,es3
-      - cluster.initial_master_nodes=es1,es2,es3
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      - xpack.security.enabled=true
       - "ELASTIC_PASSWORD=elkP@ssw0rd"
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
+      - ./es1/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - es1:/usr/share/elasticsearch/data
     ports:
       - 9201:9200
@@ -55,19 +50,14 @@ services:
     container_name: es2
     restart: unless-stopped
     environment:
-      - node.name=es2
-      - discovery.seed_hosts=es1,es3
-      - cluster.initial_master_nodes=es1,es2,es3
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      - xpack.security.enabled=true
       - "ELASTIC_PASSWORD=elkP@ssw0rd"
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
+      - ./es2/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - es2:/usr/share/elasticsearch/data
     ports:
       - 9202:9200
@@ -77,19 +67,14 @@ services:
     container_name: es3
     restart: unless-stopped
     environment:
-      - node.name=es3
-      - discovery.seed_hosts=es2,es1
-      - cluster.initial_master_nodes=es1,es2,es3
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-      - xpack.security.enabled=true
       - "ELASTIC_PASSWORD=elkP@ssw0rd"
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
+      - ./es3/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - es3:/usr/share/elasticsearch/data
     ports:
       - 9203:9200
