@@ -96,8 +96,6 @@ services:
       - es01
       - es02
       - es03
-    environment:
-      - ELASTICSEARCH_URL=http://10.7.12.107
     ports:
       - 5601:5601
     volumes:
