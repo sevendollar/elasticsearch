@@ -19,23 +19,23 @@ services:
       - "LS_JAVA_OPTS=-Xms4g -Xmx4g"
     depends_on:
       - mongodb 
-      - es01
-      - es02
-      - es03
+      - es1
+      - es2
+      - es3
     ports:
       - "1514:1514/udp"
     volumes:
       - $PWD/logstash/logstash-pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
       - $PWD/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
 
-  es01:
+  es1:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
-    container_name: es01
+    container_name: es1
     restart: unless-stopped
     environment:
-      - node.name=es01
-      - discovery.seed_hosts=es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
+      - node.name=es1
+      - discovery.seed_hosts=es2,es3
+      - cluster.initial_master_nodes=es1,es2,es3
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
@@ -45,17 +45,19 @@ services:
       memlock:
         soft: -1
         hard: -1
+    volumes:
+      - es1:/usr/share/elasticsearch/data
     ports:
       - 9201:9200
 
-  es02:
+  es2:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
-    container_name: es02
+    container_name: es2
     restart: unless-stopped
     environment:
-      - node.name=es02
-      - discovery.seed_hosts=es01,es03
-      - cluster.initial_master_nodes=es01,es02,es03
+      - node.name=es2
+      - discovery.seed_hosts=es1,es3
+      - cluster.initial_master_nodes=es1,es2,es3
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
@@ -65,17 +67,19 @@ services:
       memlock:
         soft: -1
         hard: -1
+    volumes:
+      - es2:/usr/share/elasticsearch/data
     ports:
       - 9202:9200
 
-  es03:
+  es3:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
-    container_name: es03
+    container_name: es3
     restart: unless-stopped
     environment:
-      - node.name=es03
-      - discovery.seed_hosts=es02,es01
-      - cluster.initial_master_nodes=es01,es02,es03
+      - node.name=es3
+      - discovery.seed_hosts=es2,es1
+      - cluster.initial_master_nodes=es1,es2,es3
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
@@ -85,6 +89,8 @@ services:
       memlock:
         soft: -1
         hard: -1
+    volumes:
+      - es3:/usr/share/elasticsearch/data
     ports:
       - 9203:9200
 
@@ -93,11 +99,15 @@ services:
     container_name: kibana
     restart: unless-stopped
     depends_on:
-      - es01
-      - es02
-      - es03
+      - es1
+      - es2
+      - es3
     ports:
       - 5601:5601
     volumes:
       - $PWD/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
 
+volumes:
+  es1:
+  es2:
+  es3:
