@@ -1,4 +1,4 @@
-version: '3'
+version: '2.2'
 
 services:
   logstash:
@@ -18,12 +18,27 @@ services:
       - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
 
   es1:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     container_name: es1
-    restart: unless-stopped
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     environment:
+      - node.name=es1
+      - network.host=0
+      - discovery.seed_hosts=es1,es2,es3
+      - cluster.initial_master_nodes=es1,es2,es3
+      - bootstrap.memory_lock=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
-      - "ELASTIC_PASSWORD=elkP@ssw0rd"
+      - xpack.license.self_generated.type=basic
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=${CERTS_DIR}/es1/es1.key
+      - xpack.security.http.ssl.certificate_authorities=${CERTS_DIR}/ca/ca.crt
+      - xpack.security.http.ssl.certificate=${CERTS_DIR}/es1/es1.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.certificate_authorities=${CERTS_DIR}/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=${CERTS_DIR}/es1/es1.crt
+      - xpack.security.transport.ssl.key=${CERTS_DIR}/es1/es1.key
     ulimits:
       memlock:
         soft: -1
@@ -35,18 +50,40 @@ services:
         soft: 65536
         hard: 65536
     volumes:
-      - ./es1/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+#      - ./es1/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - es1:/usr/share/elasticsearch/data
+      - certs:${CERTS_DIR}
     ports:
       - 9201:9200
+    restart: unless-stopped
+    healthcheck:
+      test: curl --cacert ${CERTS_DIR}/ca/ca.crt -s https://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   es2:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     container_name: es2
-    restart: unless-stopped
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     environment:
+      - node.name=es2
+      - network.host=0
+      - discovery.seed_hosts=es1,es2,es3
+      - cluster.initial_master_nodes=es1,es2,es3
+      - bootstrap.memory_lock=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
-      - "ELASTIC_PASSWORD=elkP@ssw0rd"
+      - xpack.license.self_generated.type=basic
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=${CERTS_DIR}/es2/es2.key
+      - xpack.security.http.ssl.certificate_authorities=${CERTS_DIR}/ca/ca.crt
+      - xpack.security.http.ssl.certificate=${CERTS_DIR}/es2/es2.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.certificate_authorities=${CERTS_DIR}/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=${CERTS_DIR}/es2/es2.crt
+      - xpack.security.transport.ssl.key=${CERTS_DIR}/es2/es2.key
     ulimits:
       memlock:
         soft: -1
@@ -58,18 +95,35 @@ services:
         soft: 65536
         hard: 65536
     volumes:
-      - ./es2/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+#      - ./es2/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - es2:/usr/share/elasticsearch/data
+      - certs:${CERTS_DIR}
     ports:
       - 9202:9200
+    restart: unless-stopped
 
   es3:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     container_name: es3
-    restart: unless-stopped
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     environment:
+      - node.name=es3
+      - network.host=0
+      - discovery.seed_hosts=es1,es2,es3
+      - cluster.initial_master_nodes=es1,es2,es3
+      - bootstrap.memory_lock=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
-      - "ELASTIC_PASSWORD=elkP@ssw0rd"
+      - xpack.license.self_generated.type=basic
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=${CERTS_DIR}/es3/es3.key
+      - xpack.security.http.ssl.certificate_authorities=${CERTS_DIR}/ca/ca.crt
+      - xpack.security.http.ssl.certificate=${CERTS_DIR}/es3/es3.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.certificate_authorities=${CERTS_DIR}/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=${CERTS_DIR}/es3/es3.crt
+      - xpack.security.transport.ssl.key=${CERTS_DIR}/es3/es3.key
     ulimits:
       memlock:
         soft: -1
@@ -81,10 +135,12 @@ services:
         soft: 65536
         hard: 65536
     volumes:
-      - ./es3/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      - es3:/usr/share/elasticsearch/data
+#      - ./es2/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - es2:/usr/share/elasticsearch/data
+      - certs:${CERTS_DIR}
     ports:
       - 9203:9200
+    restart: unless-stopped
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.3.0
@@ -99,7 +155,13 @@ services:
     volumes:
       - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
 
+  wait_until_ready:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
+    command: /usr/bin/true
+    depends_on: {"es1": {"condition": "service_healthy"}}
+
 volumes:
   es1:
   es2:
   es3:
+  certs:
