@@ -164,6 +164,16 @@ services:
       - ./logstash/logstash-pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
       - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
 
+  mongodb:
+    image: mongo
+    container_name: mongo
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=jef
+      - MONGO_INITDB_ROOT_PASSWORD=mongopw
+    ports:
+      - "27017:27017"
+
 volumes:
   es1:
   es2:
