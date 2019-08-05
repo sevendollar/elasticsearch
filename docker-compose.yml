@@ -1,27 +1,13 @@
 version: '2.2'
 
 services:
-  logstash:
-    build: logstash/.
-    container_name: logstash
-    restart: unless-stopped
-    environment:
-      - "LS_JAVA_OPTS=-Xms4g -Xmx4g"
-    depends_on:
-      - es1
-      - es2
-      - es3
-    ports:
-      - "1514:1514/udp"
-    volumes:
-      - ./logstash/logstash-pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
 
   es1:
     container_name: es1
     image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     environment:
       - node.name=es1
+      - cluster.name="docker-cluster"
       - network.host=0
       - discovery.seed_hosts=es1,es2,es3
       - cluster.initial_master_nodes=es1,es2,es3
@@ -67,6 +53,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     environment:
       - node.name=es2
+      - cluster.name="docker-cluster"
       - network.host=0
       - discovery.seed_hosts=es1,es2,es3
       - cluster.initial_master_nodes=es1,es2,es3
@@ -107,6 +94,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     environment:
       - node.name=es3
+      - cluster.name="docker-cluster"
       - network.host=0
       - discovery.seed_hosts=es1,es2,es3
       - cluster.initial_master_nodes=es1,es2,es3
@@ -135,8 +123,8 @@ services:
         soft: 65536
         hard: 65536
     volumes:
-#      - ./es2/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      - es2:/usr/share/elasticsearch/data
+#      - ./es3/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - es3:/usr/share/elasticsearch/data
       - certs:${CERTS_DIR}
     ports:
       - 9203:9200
@@ -159,6 +147,22 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     command: /usr/bin/true
     depends_on: {"es1": {"condition": "service_healthy"}}
+
+  logstash:
+    build: logstash/.
+    container_name: logstash
+    restart: unless-stopped
+    environment:
+      - "LS_JAVA_OPTS=-Xms4g -Xmx4g"
+    depends_on:
+      - es1
+      - es2
+      - es3
+    ports:
+      - "1514:1514/udp"
+    volumes:
+      - ./logstash/logstash-pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
 
 volumes:
   es1:
