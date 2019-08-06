@@ -113,20 +113,22 @@ services:
     container_name: logstash
     build: logstash/.
     environment:
+      - CERTS_DIR=${CERTS_DIR}
       - "LS_JAVA_OPTS=-Xms4g -Xmx4g"
     depends_on:
       - es1
       - es2
       - es3
     volumes:
-      - ./logstash/logstash-pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ${PWD}/logstash/logstash-pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ${PWD}/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - certs:${CERTS_DIR}
     ports:
       - "1514:1514/udp"
     restart: unless-stopped
 
 
-  mongodb:
+  mongo:
     container_name: mongo
     image: mongo
     environment:
