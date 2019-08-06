@@ -48,6 +48,7 @@ services:
       timeout: 10s
       retries: 5
 
+
   es2:
     container_name: es2
     image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
@@ -88,6 +89,7 @@ services:
     ports:
       - 9202:9200
     restart: unless-stopped
+
 
   es3:
     container_name: es3
@@ -130,49 +132,59 @@ services:
       - 9203:9200
     restart: unless-stopped
 
+
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.3.0
     container_name: kibana
-    restart: unless-stopped
+    image: docker.elastic.co/kibana/kibana:7.3.0
+    environment:
+      - server.name=kibana
+      - server.host=0
+      - elasticsearch.hosts=https://es1:9200,https://es2:9200,https://es3:9200
+      - elasticsearch.username=elastic
+      - elasticsearch.password=${ELASTIC_PASSWORD}
+    volumes:
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+    ports:
+      - 5601:5601
     depends_on:
       - es1
       - es2
       - es3
-    ports:
-      - 5601:5601
-    volumes:
-      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+    restart: unless-stopped
 
   wait_until_ready:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     command: /usr/bin/true
     depends_on: {"es1": {"condition": "service_healthy"}}
 
+
   logstash:
-    build: logstash/.
     container_name: logstash
-    restart: unless-stopped
+    build: logstash/.
     environment:
       - "LS_JAVA_OPTS=-Xms4g -Xmx4g"
     depends_on:
       - es1
       - es2
       - es3
-    ports:
-      - "1514:1514/udp"
     volumes:
       - ./logstash/logstash-pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
       - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+    ports:
+      - "1514:1514/udp"
+    restart: unless-stopped
+
 
   mongodb:
-    image: mongo
     container_name: mongo
-    restart: unless-stopped
+    image: mongo
     environment:
       - MONGO_INITDB_ROOT_USERNAME=jef
       - MONGO_INITDB_ROOT_PASSWORD=mongopw
     ports:
       - "27017:27017"
+    restart: unless-stopped
+
 
 volumes:
   es1:
