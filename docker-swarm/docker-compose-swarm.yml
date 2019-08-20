@@ -1,0 +1,77 @@
+version: '3.3'
+
+services:
+
+  es1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
+    environment:
+      - "ES_JAVA_OPTS=-Xms6g -Xmx6g"
+      - ELASTIC_PASSWORD=elkP@ssw0rd
+    configs:
+      - source: es1.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+      - source: es1.key
+        target: /usr/share/elasticsearch/config/certificates/es1/es1.key
+      - source: es1.crt
+        target: /usr/share/elasticsearch/config/certificates/es1/es1.crt
+      - source: ca.crt
+        target: /usr/share/elasticsearch/config/certificates/ca/ca.crt
+    ports:
+      - 9201:9200
+
+  es2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
+    environment:
+      - "ES_JAVA_OPTS=-Xms6g -Xmx6g"
+      - ELASTIC_PASSWORD=elkP@ssw0rd
+    configs:
+      - source: es2.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+      - source: es2.key
+        target: /usr/share/elasticsearch/config/certificates/es2/es2.key
+      - source: es2.crt
+        target: /usr/share/elasticsearch/config/certificates/es2/es2.crt
+      - source: ca.crt
+        target: /usr/share/elasticsearch/config/certificates/ca/ca.crt
+    ports:
+      - 9202:9200
+
+
+  es3:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
+    environment:
+      - "ES_JAVA_OPTS=-Xms6g -Xmx6g"
+      - ELASTIC_PASSWORD=elkP@ssw0rd
+    configs:
+      - source: es3.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+      - source: es3.key
+        target: /usr/share/elasticsearch/config/certificates/es3/es3.key
+      - source: es3.crt
+        target: /usr/share/elasticsearch/config/certificates/es3/es3.crt
+      - source: ca.crt
+        target: /usr/share/elasticsearch/config/certificates/ca/ca.crt
+    ports:
+      - 9203:9200
+
+configs:
+  es1.yml:
+    file: ./es1/elasticsearch.yml
+  es2.yml:
+    file: ./es2/elasticsearch.yml
+  es3.yml:
+    file: ./es3/elasticsearch.yml
+  es1.key:
+    file: ./certs/es1/es1.key
+  es2.key:
+    file: ./certs/es2/es2.key
+  es3.key:
+    file: ./certs/es3/es3.key
+  es1.crt:
+    file: ./certs/es1/es1.crt
+  es2.crt:
+    file: ./certs/es2/es2.crt
+  es3.crt:
+    file: ./certs/es3/es3.crt
+  ca.crt:
+    file: ./certs/ca/ca.crt
