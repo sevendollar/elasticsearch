@@ -1,0 +1,7 @@
+notes on runing elasticsearch on docker swarm on CoreOS
+
+1. set the vm.max_map_count above 262144; echo "vm.max_map_count=262144" >> /etc/sysctl.d/elk.conf
+
+2. docker.service shound be enabled before join the swarm cluster; systemctl enable docker.service
+
+3. ulimit > memlock: can't be changed on CoreOS, so don't bother.
