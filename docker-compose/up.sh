@@ -4,4 +4,4 @@
 docker-compose -f create-certs.yml run --rm create_certs && \
 
 # 2nd step
-docker-compose up
+docker-compose up -d
